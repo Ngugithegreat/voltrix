@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Offline</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0a0b10;
+        color: #e8ecf5;
+        font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      .card { max-width: 360px; }
+      .logo {
+        width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 20px;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #a78bff, #6a47f5);
+      }
+      h1 { font-size: 22px; margin: 0 0 8px; letter-spacing: -0.02em; }
+      p { color: #8a90a0; font-size: 15px; line-height: 1.6; margin: 0 0 22px; }
+      button {
+        background: linear-gradient(180deg, #8b6dff, #6a47f5);
+        color: #fff; border: 0; border-radius: 12px;
+        padding: 12px 22px; font-size: 15px; font-weight: 600; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 18.5C6.6 18.5 7.6 11.5 10.5 11.5S14.3 21 17.5 21 21 14 24 13.6" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="24" cy="13.6" r="2.7" fill="#fff" />
+        </svg>
+      </div>
+      <h1>You're offline</h1>
+      <p>This app needs an internet connection to show live prices and your balance. Check your connection and try again.</p>
+      <button onclick="location.reload()">Retry</button>
+    </div>
+  </body>
+</html>

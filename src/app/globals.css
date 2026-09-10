@@ -1,0 +1,300 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Themeable tokens as RGB channels so Tailwind opacity modifiers work. */
+:root {
+  --bg: 10 11 16;
+  --surface: 18 19 27;
+  --surface2: 26 28 39;
+  --border: 38 42 56;
+  --muted: 138 144 166;
+  --fg: 232 236 245;
+  --input: 12 14 22;
+  --sheen: rgba(255, 255, 255, 0.03);
+  --ghost: rgba(255, 255, 255, 0.04);
+  --ghost-hover: rgba(255, 255, 255, 0.07);
+  --grid: #182036;
+  --aurora1: rgba(79, 124, 255, 0.18);
+  --aurora2: rgba(124, 58, 237, 0.14);
+  --aurora3: rgba(34, 211, 238, 0.1);
+  /* Brand accent (RGB channels) — drives every brand colour in the app. */
+  --brand: 79 124 255;
+  --brand-dark: 51 85 224;
+  --brand-light: 124 156 255;
+  color-scheme: dark;
+}
+
+:root.light {
+  --bg: 239 242 248;
+  --surface: 255 255 255;
+  --surface2: 240 243 249;
+  --border: 224 228 238;
+  --muted: 100 112 133;
+  --fg: 17 24 39;
+  --input: 246 248 252;
+  --sheen: rgba(255, 255, 255, 0.5);
+  --ghost: rgba(15, 20, 35, 0.04);
+  --ghost-hover: rgba(15, 20, 35, 0.08);
+  --grid: #e6e9f2;
+  --aurora1: rgba(79, 124, 255, 0.12);
+  --aurora2: rgba(124, 58, 237, 0.08);
+  --aurora3: rgba(34, 211, 238, 0.07);
+  color-scheme: light;
+}
+
+html,
+body {
+  background: rgb(var(--bg));
+  color: rgb(var(--fg));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-image:
+    radial-gradient(1000px 560px at 82% -12%, var(--aurora1), transparent 60%),
+    radial-gradient(760px 460px at -5% 8%, var(--aurora2), transparent 60%),
+    radial-gradient(600px 500px at 50% 120%, var(--aurora3), transparent 60%);
+  background-attachment: fixed;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::selection {
+  background: rgb(var(--brand) / 0.35);
+}
+
+/* Component classes live in the components layer so Tailwind utilities
+   (hidden, responsive display, rounded-*, etc.) always override them. */
+@layer components {
+.card {
+  position: relative;
+  background:
+    linear-gradient(180deg, var(--sheen), transparent 42%),
+    rgb(var(--surface));
+  border: 1px solid rgb(var(--border));
+  border-radius: 18px;
+  box-shadow: 0 12px 40px -20px rgba(0, 0, 0, 0.55);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-brand {
+  background: linear-gradient(180deg, rgb(var(--brand-light)), rgb(var(--brand-dark)));
+  color: #fff;
+  box-shadow: 0 8px 24px -10px rgb(var(--brand) / 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.btn-brand:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.btn-ghost {
+  background: var(--ghost);
+  color: rgb(var(--fg));
+  border: 1px solid rgb(var(--border));
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--ghost-hover);
+}
+
+.input {
+  width: 100%;
+  background: rgb(var(--input));
+  border: 1px solid rgb(var(--border));
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: rgb(var(--fg));
+  outline: none;
+  transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+.input::placeholder {
+  color: rgb(var(--muted));
+}
+.input:focus {
+  border-color: rgb(var(--brand));
+  box-shadow: 0 0 0 3px rgb(var(--brand) / 0.15);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, rgb(var(--brand-light)), rgb(var(--brand)) 40%, #5b8def);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* subtle inset panel that adapts to theme */
+.panel {
+  background: var(--ghost);
+  border: 1px solid rgb(var(--border));
+}
+}
+
+/* Ambient drifting blobs for the landing background */
+@keyframes blobDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -30px) scale(1.12);
+  }
+  66% {
+    transform: translate(-30px, 25px) scale(0.92);
+  }
+}
+.animate-blob {
+  animation: blobDrift 20s ease-in-out infinite;
+}
+.animate-blob-slow {
+  animation: blobDrift 28s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob,
+  .animate-blob-slow {
+    animation: none;
+  }
+}
+
+/* Recent-wins ticker marquee */
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ticker-track {
+  animation: tickerScroll 40s linear infinite;
+}
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* Settled trade card: fade in, hold, then slide out as it hands off to history */
+@keyframes settleOut {
+  0% { opacity: 0; transform: translateY(8px); }
+  12% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-18px); }
+}
+.animate-settle-out {
+  animation: settleOut 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-settle-out {
+    animation: none;
+  }
+}
+
+/* Clean shake on a losing trade */
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(7px); }
+  45% { transform: translateX(-5px); }
+  60% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+.animate-shake {
+  animation: shakeX 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake {
+    animation: none;
+  }
+}
+
+/* Perspective grid floor for the landing hero — drifts slowly upward */
+.grid-floor {
+  background-image: linear-gradient(rgb(var(--brand) / 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--brand) / 0.35) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 75%);
+  mask-image: linear-gradient(to top, #000 0%, transparent 75%);
+}
+@keyframes gridDrift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 46px, 0 0; }
+}
+.animate-grid-drift {
+  animation: gridDrift 3.2s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-grid-drift {
+    animation: none;
+  }
+}
+
+/* Soft breathing glow ring, used behind hero badges / icons */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.animate-glow-pulse {
+  animation: glowPulse 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow-pulse {
+    animation: none;
+  }
+}
+
+/* Diagonal light sweep across a card border, e.g. the hero chart frame */
+@keyframes sheenSweep {
+  0% { transform: translateX(-120%) rotate(8deg); }
+  100% { transform: translateX(220%) rotate(8deg); }
+}
+.sheen-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(75deg, transparent 40%, rgb(var(--brand) / 0.16) 50%, transparent 60%);
+  animation: sheenSweep 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheen-sweep::after {
+    animation: none;
+    display: none;
+  }
+}
