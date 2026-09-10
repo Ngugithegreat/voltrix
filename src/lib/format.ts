@@ -20,14 +20,14 @@ export function money(c: number, opts: { sign?: boolean } = {}): string {
   return s;
 }
 
-/** Public-facing account number derived from the user id, e.g. ST-100482. */
+/** Public-facing account number derived from the user id, e.g. VX-100482. */
 export function accountNo(id: number): string {
-  return "ST-" + String(100000 + Number(id));
+  return "VX-" + String(100000 + Number(id));
 }
 
-/** Parse an account number / referral code (ST-100482 or ST100482) back to a user id. */
+/** Parse an account number / referral code (VX-100482 or VX100482) back to a user id. */
 export function idFromAccountNo(code: string): number | null {
-  const m = String(code).trim().toUpperCase().match(/^ST-?(\d{5,})$/);
+  const m = String(code).trim().toUpperCase().match(/^VX-?(\d{5,})$/);
   if (!m) return null;
   const id = Number(m[1]) - 100000;
   return Number.isInteger(id) && id > 0 ? id : null;
