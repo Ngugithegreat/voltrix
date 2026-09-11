@@ -5,7 +5,7 @@ import { db } from "./db";
 // safe to wire into events before the keys are set in the environment.
 //
 // Required env to activate:  VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
-// Optional:                  VAPID_SUBJECT (default mailto:support@voltrix.vercel.app)
+// Optional:                  VAPID_SUBJECT (default mailto:support@novatraders.site)
 
 let configured = false;
 
@@ -21,7 +21,7 @@ function ensureVapid(): boolean {
   if (!isPushConfigured()) return false;
   if (!configured) {
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT || "mailto:support@voltrix.vercel.app",
+      process.env.VAPID_SUBJECT || "mailto:support@novatraders.site",
       process.env.VAPID_PUBLIC_KEY!,
       process.env.VAPID_PRIVATE_KEY!
     );

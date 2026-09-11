@@ -54,8 +54,8 @@ async function call<T = any>(endpoint: string, body: unknown): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
-    Referer: (process.env.PUBLIC_BASE_URL || "https://voltrix.vercel.app") + "/",
-    "User-Agent": "Voltrix/1.0 (+https://voltrix.vercel.app)",
+    Referer: (process.env.PUBLIC_BASE_URL || "https://novatraders.site") + "/",
+    "User-Agent": "NovaTraders/1.0 (+https://novatraders.site)",
   };
   if (process.env.COLLECTO_RELAY_SECRET) {
     headers["x-relay-secret"] = process.env.COLLECTO_RELAY_SECRET;

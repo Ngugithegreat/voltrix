@@ -2,8 +2,8 @@
 // authenticated fetch to their REST API works in the Vercel serverless runtime.
 //
 // Required env:  RESEND_API_KEY
-// Optional env:  EMAIL_FROM   (default "${BRAND_NAME} <noreply@voltrix.vercel.app>")
-//                PUBLIC_BASE_URL (used to build links; default voltrix.vercel.app)
+// Optional env:  EMAIL_FROM   (default "${BRAND_NAME} <noreply@novatraders.site>")
+//                PUBLIC_BASE_URL (used to build links; default novatraders.site)
 //
 // If RESEND_API_KEY isn't set, sends are a safe no-op so signup/reset still work
 // before the DNS + key setup is finished.
@@ -17,11 +17,11 @@ export function isEmailConfigured(): boolean {
 }
 
 export function emailFrom(): string {
-  return (process.env.EMAIL_FROM || `${BRAND_NAME} <noreply@voltrix.vercel.app>`).trim();
+  return (process.env.EMAIL_FROM || `${BRAND_NAME} <noreply@novatraders.site>`).trim();
 }
 
 export function siteUrl(): string {
-  const base = process.env.PUBLIC_BASE_URL || "https://voltrix.vercel.app";
+  const base = process.env.PUBLIC_BASE_URL || "https://novatraders.site";
   return base.replace(/\/$/, "");
 }
 
