@@ -46,7 +46,11 @@ const CRYPTO_MIN_USD = Number(process.env.NEXT_PUBLIC_CRYPTO_MIN_USD || 20);
 // Pretty-print a stored MSISDN (2547XXXXXXXX) as +254 7XX XXX XXX.
 function fmtLocalPhone(p: string | null | undefined): string {
   const d = String(p || "").replace(/\D/g, "");
-  if (d.startsWith("254") && d.length === 12) return `+254 ${d.slice(3, 6)} ${d.slice(6, 9)} ${d.slice(9)}`;
+  // Mask the middle 3 digits for privacy on the deposit/withdraw screen, e.g.
+  // 254793789350 → +254 793 ••• 350. Display-only — the real number is still
+  // what gets submitted to the payment rail.
+  if (d.length === 12) return `+${d.slice(0, 3)} ${d.slice(3, 6)} ••• ${d.slice(9)}`;
+  if (d.length >= 6) return `${d.slice(0, d.length - 5)} ••• ${d.slice(-2)}`;
   return p || "";
 }
 
