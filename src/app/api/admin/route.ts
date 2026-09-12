@@ -60,10 +60,10 @@ export async function GET() {
     // admin dashboard from hanging.
     sql`
       WITH recent AS (
-        SELECT id, name, email, balance, status, promo, created_at
+        SELECT id, name, email, balance, status, promo, withdraw_blocked, created_at
         FROM voltrix_users ORDER BY created_at DESC LIMIT 100
       )
-      SELECT u.id, u.name, u.email, u.balance, u.status, u.promo, u.created_at,
+      SELECT u.id, u.name, u.email, u.balance, u.status, u.promo, u.withdraw_blocked, u.created_at,
         COALESCE(SUM(CASE WHEN t.status='won' THEN t.payout - t.stake
                           WHEN t.status='lost' THEN -t.stake ELSE 0 END),0) AS pnl,
         COUNT(t.id) FILTER (WHERE t.status != 'open') AS trades,
@@ -76,7 +76,7 @@ export async function GET() {
                    ORDER BY x.created_at DESC LIMIT 1) AS deposit_method
       FROM recent u
       LEFT JOIN voltrix_trades t ON t.user_id = u.id AND t.is_demo = false
-      GROUP BY u.id, u.name, u.email, u.balance, u.status, u.promo, u.created_at
+      GROUP BY u.id, u.name, u.email, u.balance, u.status, u.promo, u.withdraw_blocked, u.created_at
       ORDER BY u.created_at DESC
     ` as Promise<any[]>,
     sql`
@@ -195,6 +195,7 @@ export async function GET() {
       account_no: accountNo(u.id),
       status: u.status || "active",
       promo: !!u.promo,
+      withdrawBlocked: !!u.withdraw_blocked,
       balance: num(u.balance),
       pnl: num(u.pnl),
       trades: num(u.trades),

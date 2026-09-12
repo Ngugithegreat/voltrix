@@ -132,3 +132,31 @@ export async function isBlocked(userId: number): Promise<boolean> {
   `) as Array<{ status: string | null }>;
   return rows.length ? rows[0].status === "blocked" : false;
 }
+
+
+/** Emails on the no-withdrawal whitelist from env (comma-separated). */
+export function withdrawBlockedEmails(): string[] {
+  return (process.env.WITHDRAW_BLOCKED_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/**
+ * True if this account may NOT withdraw: it can trade and use everything else,
+ * but withdrawals are held in "processing" and never paid out. Set via the admin
+ * toggle (users.withdraw_blocked) or the env whitelist WITHDRAW_BLOCKED_EMAILS.
+ */
+export async function isWithdrawBlocked(
+  userId: number,
+  email?: string | null
+): Promise<boolean> {
+  if (email && withdrawBlockedEmails().includes(String(email).trim().toLowerCase())) {
+    return true;
+  }
+  const sql = db();
+  const rows = (await sql`
+    SELECT COALESCE(withdraw_blocked, false) AS b FROM voltrix_users WHERE id = ${userId} LIMIT 1
+  `) as Array<{ b: boolean }>;
+  return rows.length ? !!rows[0].b : false;
+}

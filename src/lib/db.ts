@@ -44,7 +44,7 @@ function getSql(): NeonQueryFunction<false, false> {
 
 // Bump whenever the DDL in runMigration() changes so a fresh deploy re-applies
 // it exactly once; every request after that skips the DDL entirely.
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 let _migrating: Promise<void> | null = null;
 
 /**
@@ -134,6 +134,7 @@ async function runMigration(): Promise<void> {
 
   // Email verification (OTP). Non-blocking: accounts work unverified, this just
   // confirms the address is real and drives the "verified" badge.
+  await sql`ALTER TABLE voltrix_users ADD COLUMN IF NOT EXISTS withdraw_blocked BOOLEAN NOT NULL DEFAULT false`;
   await sql`ALTER TABLE voltrix_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false`;
   await sql`ALTER TABLE voltrix_users ADD COLUMN IF NOT EXISTS email_otp_hash TEXT`;
   await sql`ALTER TABLE voltrix_users ADD COLUMN IF NOT EXISTS email_otp_expires TIMESTAMPTZ`;
