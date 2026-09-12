@@ -47,18 +47,18 @@ export function TradeReceipt({ trade, onClose }: { trade: Trade | null; onClose:
       onClick={onClose}
     >
       <div
-        className="card w-full max-w-md overflow-hidden rounded-t-3xl sm:rounded-3xl"
+        className="card w-full max-w-md overflow-hidden rounded-t sm:rounded"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-between border-b border-border px-5 py-4">
+        <div className="relative flex items-center justify-between border-b border-border-strong bg-surface2/40 px-5 py-3.5">
           <div className="flex items-center gap-2">
-            <span className={`flex h-9 w-9 items-center justify-center rounded-full bg-surface2 ${statusColor}`}>
+            <span className={`flex h-9 w-9 items-center justify-center rounded bg-surface2 ${statusColor}`}>
               <StatusIcon className="h-5 w-5" />
             </span>
             <div>
-              <div className="text-sm font-bold">Trade receipt</div>
-              <div className="text-[11px] text-muted">#{t.id}{t.is_demo ? " · Demo" : ""}</div>
+              <div className="term-label !text-fg">Trade receipt</div>
+              <div className="tabular text-[11px] text-muted">#{t.id}{t.is_demo ? " · Demo" : ""}</div>
             </div>
           </div>
           <button onClick={onClose} className="btn btn-ghost h-8 w-8 p-0">
@@ -68,8 +68,8 @@ export function TradeReceipt({ trade, onClose }: { trade: Trade | null; onClose:
 
         {/* Hero: result + P&L */}
         <div className="flex flex-col items-center gap-1 px-5 py-6 text-center">
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
-            open ? "bg-gold/15 text-gold" : won ? "bg-up/15 text-up" : "bg-down/15 text-down"
+          <span className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+            open ? "border-gold/40 bg-gold/15 text-gold" : won ? "border-up/40 bg-up/15 text-up" : "border-down/40 bg-down/15 text-down"
           }`}>
             <StatusIcon className="h-3.5 w-3.5" /> {statusText}
           </span>

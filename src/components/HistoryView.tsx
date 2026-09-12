@@ -49,13 +49,13 @@ export function HistoryView() {
       </div>
 
       {/* Trades / Transactions toggle */}
-      <div className="flex w-full max-w-xs rounded-xl bg-surface2 p-1">
+      <div className="flex w-full max-w-xs rounded border border-border bg-surface2 p-0.5">
         {(["trades", "transactions"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 rounded-lg py-1.5 text-sm font-semibold capitalize transition ${
-              tab === t ? "bg-brand text-white shadow-glow" : "text-muted hover:text-fg"
+            className={`flex-1 rounded-sm py-1.5 text-xs font-bold uppercase tracking-wide transition ${
+              tab === t ? "bg-brand text-white" : "text-muted hover:text-fg"
             }`}
           >
             {t}
@@ -65,15 +65,15 @@ export function HistoryView() {
 
       {tab === "trades" ? (
         <div className="card overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3">
-            <span className="font-bold">Trade history</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-strong bg-surface2/30 px-4 py-2.5">
+            <span className="term-label !text-fg">Trade history</span>
             <div className="flex flex-wrap gap-1">
               {FILTERS.map(([f, label]) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
-                    filter === f ? "bg-surface2 text-fg" : "text-muted hover:text-fg"
+                  className={`rounded border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition ${
+                    filter === f ? "border-brand/50 bg-brand/10 text-brand" : "border-transparent text-muted hover:text-fg"
                   }`}
                 >
                   {label}
@@ -95,7 +95,7 @@ export function HistoryView() {
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="border-b border-border px-5 py-3 font-bold">Transactions</div>
+          <div className="border-b border-border-strong bg-surface2/30 px-4 py-2.5 term-label !text-fg">Transactions</div>
           {txns.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted">No deposits or withdrawals yet.</div>
           ) : (
@@ -150,10 +150,10 @@ function TradeRow({ t, onSelect }: { t: Trade; onSelect?: (t: Trade) => void }) 
   return (
     <div
       onClick={() => onSelect?.(t)}
-      className={`flex items-center justify-between px-5 py-3 ${onSelect ? "cursor-pointer transition hover:bg-surface2/50" : ""}`}
+      className={`flex items-center justify-between border-l-2 px-4 py-2.5 ${up ? "border-l-up/60" : "border-l-down/60"} ${onSelect ? "cursor-pointer transition hover:bg-surface2/50" : ""}`}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${up ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>
+        <div className={`flex h-8 w-8 items-center justify-center rounded ${up ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>
           {up ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
         </div>
         <div>
@@ -186,9 +186,9 @@ function TxnRow({ x }: { x: Txn }) {
   const statusColor =
     x.status === "completed" ? "text-up" : x.status === "rejected" ? "text-down" : "text-gold";
   return (
-    <div className="flex items-center justify-between px-5 py-3">
+    <div className="flex items-center justify-between px-4 py-2.5">
       <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isCredit ? "bg-up/15 text-up" : "bg-gold/15 text-gold"}`}>
+        <div className={`flex h-8 w-8 items-center justify-center rounded ${isCredit ? "bg-up/15 text-up" : "bg-gold/15 text-gold"}`}>
           <Icon className="h-4 w-4" />
         </div>
         <div>
@@ -216,8 +216,8 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
   const color =
     accent === "brand" ? "text-brand" : accent === "up" ? "text-up" : accent === "down" ? "text-down" : "text-fg";
   return (
-    <div className="card p-4">
-      <div className="text-[11px] uppercase tracking-wider text-muted">{label}</div>
+    <div className="card p-3.5">
+      <div className="term-label">{label}</div>
       <div className={`tabular mt-1 text-xl font-bold ${color}`}>{value}</div>
     </div>
   );

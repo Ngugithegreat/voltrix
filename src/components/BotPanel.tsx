@@ -205,7 +205,7 @@ export function BotPanel({
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setBotAlert(null)} />
           <div
-            className={`relative w-full max-w-xs rounded-2xl border bg-surface p-6 text-center shadow-glow ${
+            className={`relative w-full max-w-xs rounded border bg-surface p-6 text-center shadow-glow ${
               botAlert.kind === "tp" ? "border-up/40" : "border-down/40"
             }`}
           >
@@ -223,7 +223,7 @@ export function BotPanel({
               Your {botAlert.kind === "tp" ? "target profit" : "stop loss"} of{" "}
               <b className="text-fg">{money(botAlert.amount)}</b> was hit, so the bot stopped.
             </p>
-            <div className="mt-3 rounded-xl border border-border bg-surface2/60 py-2">
+            <div className="mt-3 rounded border border-border bg-surface2/60 py-2">
               <div className="text-[10px] uppercase tracking-wider text-muted">Session P&amp;L</div>
               <div className={`tabular text-xl font-black ${botAlert.pnl >= 0 ? "text-up" : "text-down"}`}>
                 {money(botAlert.pnl, { sign: true })}
@@ -258,7 +258,7 @@ export function BotPanel({
       </div>
 
       {(running || stats.runs > 0) && (
-        <div className="grid grid-cols-4 gap-2 rounded-xl border border-border bg-surface2/60 p-2 text-center">
+        <div className="grid grid-cols-4 gap-2 rounded border border-border bg-surface2/60 p-2 text-center">
           <BotStat label="Runs" value={String(stats.runs)} />
           <BotStat label="Wins" value={String(stats.wins)} accent="up" />
           <BotStat label="Losses" value={String(stats.losses)} accent="down" />
@@ -278,15 +278,15 @@ export function BotPanel({
 
       {/* Run history */}
       {log.length > 0 && (
-        <div className="rounded-xl border border-border bg-surface2/60">
+        <div className="rounded border border-border bg-surface2/60">
           <div className="border-b border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted">
             Run history
           </div>
           <div className="max-h-28 overflow-y-auto">
             {log.map((r) => (
               <div key={r.n} className="flex items-center justify-between px-3 py-1.5 text-[11px]">
-                <span className="text-muted">
-                  #{r.n} <span className="text-white">{r.label}</span>
+                <span className="tabular text-muted">
+                  #{r.n} <span className="font-semibold text-fg">{r.label}</span>
                 </span>
                 <span className={`tabular font-bold ${r.won ? "text-up" : "text-down"}`}>
                   {money(r.profitCents, { sign: true })}

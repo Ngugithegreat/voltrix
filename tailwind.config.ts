@@ -14,6 +14,7 @@ const config: Config = {
         surface: "rgb(var(--surface) / <alpha-value>)",
         surface2: "rgb(var(--surface2) / <alpha-value>)",
         border: "rgb(var(--border) / <alpha-value>)",
+        "border-strong": "rgb(var(--border-strong) / <alpha-value>)",
         muted: "rgb(var(--muted) / <alpha-value>)",
         fg: "rgb(var(--fg) / <alpha-value>)",
         // Fixed accents — read well on both themes.

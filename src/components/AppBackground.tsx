@@ -27,9 +27,9 @@ export function AppBackground() {
           WebkitMaskImage: "radial-gradient(ellipse 100% 60% at 50% -10%, #000 30%, transparent 78%)",
         }}
       />
-      {/* glowing orbs */}
-      <div className="absolute -top-40 left-[12%] h-[36rem] w-[36rem] rounded-full bg-brand/15 blur-[120px]" />
-      <div className="absolute top-1/4 -right-40 h-[32rem] w-[32rem] rounded-full bg-indigo-500/15 blur-[120px]" />
+      {/* glowing orbs — dialed back for a trading-desk feel */}
+      <div className="absolute -top-40 left-[12%] h-[36rem] w-[36rem] rounded-full bg-brand/10 blur-[120px]" />
+      <div className="absolute top-1/4 -right-40 h-[32rem] w-[32rem] rounded-full bg-indigo-500/10 blur-[120px]" />
 
       {/* subtle upward market line along the bottom */}
       <svg

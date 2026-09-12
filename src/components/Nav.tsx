@@ -96,15 +96,15 @@ function AccountSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 rounded-xl border px-2.5 py-1.5 transition ${
-          demo ? "border-gold/50 bg-gold/10" : "border-border bg-surface2/60 hover:border-brand/40"
+        className={`flex items-center gap-2 rounded border px-2.5 py-1 transition ${
+          demo ? "border-gold/60 bg-gold/10" : "border-border bg-surface2/60 hover:border-brand/50"
         }`}
       >
         <span className="flex flex-col items-start leading-none">
-          <span className={`text-[9px] font-bold uppercase tracking-wider ${demo ? "text-gold" : "text-up"}`}>
+          <span className={`term-label ${demo ? "!text-gold" : "!text-up"}`}>
             {demo ? "Demo" : "Real"}
           </span>
-          <span className={`tabular mt-0.5 text-sm font-bold ${demo ? "text-gold" : "text-brand"}`}>
+          <span className={`tabular mt-1 text-sm font-bold ${demo ? "text-gold" : "text-brand"}`}>
             {loading ? "—" : money(demo ? demoBalance : realBalance)}
           </span>
         </span>
@@ -112,8 +112,8 @@ function AccountSwitcher() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
-          <div className="border-b border-border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+        <div className="absolute right-0 z-50 mt-1.5 w-60 overflow-hidden rounded border border-border-strong bg-surface shadow-card">
+          <div className="border-b border-border px-3 py-2 term-label">
             Switch account
           </div>
           <AccountRow
@@ -164,7 +164,7 @@ function AccountRow({
         active ? "bg-surface2/60" : ""
       }`}
     >
-      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface2 ${accent}`}>
+      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded bg-surface2 ${accent}`}>
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1">
@@ -208,18 +208,18 @@ export function Nav() {
   return (
     <>
       {/* ---------------------------- Top header ---------------------------- */}
-      <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-6">
-            <Link href="/trade" className="flex items-center gap-2">
-              <Logo className="h-7 w-7" />
+      <header className="sticky top-0 z-40 border-b border-border-strong bg-bg/85 backdrop-blur">
+        <div className="mx-auto flex h-12 max-w-[1640px] items-center justify-between px-3 sm:px-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <Link href="/trade" className="flex items-center gap-2 pr-1 md:border-r md:border-border md:pr-4">
+              <Logo className="h-6 w-6" />
               {/* Wordmark hides on the tightest phones so the action row fits */}
-              <span className="hidden text-lg font-bold tracking-tight min-[380px]:inline">
+              <span className="hidden text-[15px] font-extrabold uppercase tracking-[0.14em] min-[380px]:inline">
                 {BRAND_NAME}
               </span>
             </Link>
             {/* Desktop primary nav */}
-            <nav className="hidden items-center gap-1 md:flex">
+            <nav className="hidden items-center gap-0.5 md:flex">
               {links.map((l) => {
                 const active = pathname === l.href;
                 const Icon = l.icon;
@@ -227,8 +227,10 @@ export function Nav() {
                   <Link
                     key={l.href}
                     href={l.href}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                      active ? "bg-surface2 text-fg" : "text-muted hover:text-fg"
+                    className={`flex items-center gap-2 rounded px-2.5 py-1.5 text-[13px] font-semibold uppercase tracking-wide transition ${
+                      active
+                        ? "bg-surface2 text-fg shadow-[inset_0_-2px_0_rgb(var(--brand))]"
+                        : "text-muted hover:bg-surface2/70 hover:text-fg"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -239,14 +241,12 @@ export function Nav() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Live-account chip — desktop only */}
             {user?.account_no && (
-              <div className="hidden items-center gap-1.5 rounded-lg border border-up/30 bg-up/10 px-2.5 py-1.5 lg:flex">
-                <span className="h-1.5 w-1.5 rounded-full bg-up" />
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-up">
-                  Live account
-                </span>
+              <div className="hidden items-center gap-1.5 rounded border border-up/40 bg-up/10 px-2.5 py-1.5 lg:flex">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-up" />
+                <span className="term-label !text-up">Live</span>
                 <span className="tabular text-[10px] text-muted">{user.account_no}</span>
               </div>
             )}
@@ -261,7 +261,7 @@ export function Nav() {
             <Link
               href="/profile"
               title="Profile"
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white transition ${
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded text-xs font-bold text-white transition ${
                 pathname === "/profile" ? "ring-2 ring-brand ring-offset-2 ring-offset-bg" : ""
               }`}
               style={{ background: "linear-gradient(135deg, rgb(var(--brand-light)), rgb(var(--brand-dark)))" }}
@@ -273,7 +273,7 @@ export function Nav() {
             <button
               onClick={logout}
               title="Log out"
-              className="btn btn-ghost hidden h-9 w-9 p-0 md:inline-flex"
+              className="btn btn-ghost hidden h-8 w-8 p-0 md:inline-flex"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -283,11 +283,11 @@ export function Nav() {
 
       {/* ------------------------ Mobile bottom tab bar ------------------------ */}
       <nav
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-300 md:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-300 md:hidden ${
           barHidden ? "translate-y-full" : "translate-y-0"
         }`}
       >
-        <div className="mx-auto flex max-w-md items-stretch justify-around px-2">
+        <div className="mx-auto flex max-w-md items-stretch justify-around divide-x divide-border/60 px-1">
           {links.map((l) => {
             const active = pathname === l.href;
             const Icon = l.icon;
@@ -295,12 +295,12 @@ export function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition ${
-                  active ? "text-brand" : "text-muted"
+                className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition ${
+                  active ? "bg-surface2/60 text-brand" : "text-muted"
                 }`}
               >
                 {active && (
-                  <span className="absolute top-0 h-0.5 w-8 rounded-full bg-brand" />
+                  <span className="absolute top-0 h-0.5 w-full bg-brand" />
                 )}
                 <Icon className="h-5 w-5" />
                 {l.label}
@@ -309,7 +309,7 @@ export function Nav() {
           })}
           <button
             onClick={logout}
-            className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-muted transition active:text-down"
+            className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-muted transition active:text-down"
           >
             <LogOut className="h-5 w-5" />
             Log out

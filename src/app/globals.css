@@ -2,22 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   NovaTraders — "Pro Trader Terminal" design system.
+   Dense, high-contrast, sharp-cornered. Neutral graphite chrome so the
+   gold/ember brand accent only pops on primary actions, active states and
+   up/down emphasis. Monospace for every number. Dark + light both first-class.
+   ========================================================================== */
+
 /* Themeable tokens as RGB channels so Tailwind opacity modifiers work. */
 :root {
-  --bg: 8 8 14;
-  --surface: 19 17 24;
-  --surface2: 27 24 33;
-  --border: 44 39 50;
-  --muted: 158 148 158;
-  --fg: 245 240 238;
-  --input: 14 12 18;
-  --sheen: rgba(255, 255, 255, 0.03);
-  --ghost: rgba(255, 255, 255, 0.04);
-  --ghost-hover: rgba(255, 255, 255, 0.07);
-  --grid: #241c26;
-  --aurora1: rgba(255, 93, 62, 0.16);
-  --aurora2: rgba(255, 46, 146, 0.12);
-  --aurora3: rgba(255, 209, 102, 0.1);
+  --bg: 6 7 11;
+  --surface: 15 16 22;
+  --surface2: 22 24 32;
+  --border: 56 60 74;        /* visible graphite hairline */
+  --border-strong: 78 84 102;
+  --muted: 150 156 172;
+  --fg: 240 242 248;
+  --input: 11 12 17;
+  --sheen: rgba(255, 255, 255, 0.02);
+  --ghost: rgba(255, 255, 255, 0.05);
+  --ghost-hover: rgba(255, 255, 255, 0.09);
+  --grid: rgba(255, 255, 255, 0.05);
+  --aurora1: rgba(255, 93, 62, 0.05);
+  --aurora2: rgba(255, 46, 146, 0.04);
+  --aurora3: rgba(255, 209, 102, 0.03);
+  /* Sharp geometry — terminal, not consumer. */
+  --radius: 4px;
+  --radius-card: 6px;
+  --radius-btn: 6px;
   /* Brand accent (RGB channels) — drives every brand colour in the app. */
   --brand: 255 138 61;
   --brand-dark: 224 98 26;
@@ -26,20 +38,21 @@
 }
 
 :root.light {
-  --bg: 250 246 242;
+  --bg: 240 241 244;
   --surface: 255 255 255;
-  --surface2: 250 244 238;
-  --border: 235 224 214;
-  --muted: 120 105 100;
-  --fg: 33 24 22;
-  --input: 252 248 244;
-  --sheen: rgba(255, 255, 255, 0.5);
-  --ghost: rgba(40, 20, 15, 0.04);
-  --ghost-hover: rgba(40, 20, 15, 0.08);
-  --grid: #f0e4da;
-  --aurora1: rgba(255, 93, 62, 0.1);
-  --aurora2: rgba(255, 46, 146, 0.07);
-  --aurora3: rgba(255, 209, 102, 0.08);
+  --surface2: 244 246 249;
+  --border: 200 205 214;      /* visible graphite hairline on light too */
+  --border-strong: 168 175 187;
+  --muted: 96 104 118;
+  --fg: 19 22 30;
+  --input: 252 253 255;
+  --sheen: rgba(255, 255, 255, 0.6);
+  --ghost: rgba(20, 24, 34, 0.04);
+  --ghost-hover: rgba(20, 24, 34, 0.08);
+  --grid: rgba(20, 24, 34, 0.05);
+  --aurora1: rgba(255, 93, 62, 0.05);
+  --aurora2: rgba(255, 46, 146, 0.03);
+  --aurora3: rgba(255, 209, 102, 0.04);
   color-scheme: light;
 }
 
@@ -52,10 +65,13 @@ body {
 }
 
 body {
+  /* Faint dot-grid + a whisper of brand mesh behind panels — a trading desk,
+     not a nebula. */
   background-image:
-    radial-gradient(1000px 560px at 82% -12%, var(--aurora1), transparent 60%),
-    radial-gradient(760px 460px at -5% 8%, var(--aurora2), transparent 60%),
-    radial-gradient(600px 500px at 50% 120%, var(--aurora3), transparent 60%);
+    radial-gradient(var(--grid) 1px, transparent 1px),
+    radial-gradient(900px 520px at 88% -14%, var(--aurora1), transparent 62%),
+    radial-gradient(720px 440px at -6% 6%, var(--aurora2), transparent 62%);
+  background-size: 22px 22px, 100% 100%, 100% 100%;
   background-attachment: fixed;
 }
 
@@ -64,12 +80,12 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgb(var(--border));
-  border-radius: 8px;
+  background: rgb(var(--border-strong));
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -84,25 +100,25 @@ body {
 .card {
   position: relative;
   background:
-    linear-gradient(180deg, var(--sheen), transparent 42%),
+    linear-gradient(180deg, var(--sheen), transparent 36%),
     rgb(var(--surface));
   border: 1px solid rgb(var(--border));
-  border-radius: 18px;
-  box-shadow: 0 12px 40px -20px rgba(0, 0, 0, 0.55);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 0 rgb(var(--border) / 0.4), 0 10px 30px -24px rgba(0, 0, 0, 0.7);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   font-weight: 600;
-  border-radius: 12px;
-  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease,
-    box-shadow 0.2s ease;
+  border-radius: var(--radius-btn);
+  transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease,
+    border-color 0.12s ease, box-shadow 0.15s ease;
   cursor: pointer;
   white-space: nowrap;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
 }
 .btn:disabled {
   opacity: 0.45;
@@ -115,11 +131,11 @@ body {
 .btn-brand {
   background: linear-gradient(180deg, rgb(var(--brand-light)), rgb(var(--brand-dark)));
   color: #fff;
-  box-shadow: 0 8px 24px -10px rgb(var(--brand) / 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 14px -8px rgb(var(--brand) / 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 .btn-brand:hover:not(:disabled) {
-  filter: brightness(1.07);
+  filter: brightness(1.08);
 }
 
 .btn-ghost {
@@ -129,28 +145,32 @@ body {
 }
 .btn-ghost:hover:not(:disabled) {
   background: var(--ghost-hover);
+  border-color: rgb(var(--border-strong));
 }
 
 .input {
   width: 100%;
   background: rgb(var(--input));
   border: 1px solid rgb(var(--border));
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: var(--radius);
+  padding: 9px 11px;
   color: rgb(var(--fg));
   outline: none;
-  transition: border 0.15s ease, box-shadow 0.15s ease;
+  transition: border 0.12s ease, box-shadow 0.12s ease;
 }
 .input::placeholder {
   color: rgb(var(--muted));
 }
 .input:focus {
   border-color: rgb(var(--brand));
-  box-shadow: 0 0 0 3px rgb(var(--brand) / 0.15);
+  box-shadow: 0 0 0 2px rgb(var(--brand) / 0.18);
 }
 
+/* Every number in the app reads as terminal data: monospace + tabular. */
 .tabular {
+  font-family: var(--font-mono, ui-monospace), "SFMono-Regular", Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .text-gradient {
@@ -165,6 +185,21 @@ body {
   background: var(--ghost);
   border: 1px solid rgb(var(--border));
 }
+
+/* Terminal section label — small, upper, wide-tracked, muted. */
+.term-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--muted));
+}
+}
+
+/* Faint dot-grid layer usable behind any panel. */
+.dot-grid {
+  background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 /* Ambient drifting blobs for the landing background */

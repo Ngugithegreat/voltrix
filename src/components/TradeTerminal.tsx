@@ -421,7 +421,7 @@ export function TradeTerminal() {
   }
 
   return (
-    <div className="mx-auto flex max-w-[1640px] flex-col px-2 py-2 sm:px-3 sm:py-3 lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
+    <div className="mx-auto flex max-w-[1640px] flex-col px-1.5 py-1.5 sm:px-2 sm:py-2 lg:h-[calc(100vh-3rem)] lg:overflow-hidden">
       <EntryScanner
         open={scannerOpen}
         onClose={() => setScannerOpen(false)}
@@ -443,19 +443,21 @@ export function TradeTerminal() {
       {/* Unified workspace — a single high-end surface split into seamless
           panes (positions · chart · ticket) instead of separate floating
           columns, so the whole dashboard reads as one page. */}
-      <div className="card flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row lg:divide-x lg:divide-border">
+      <div className="card flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row lg:divide-x lg:divide-border-strong">
         {/* Positions — drops to the bottom on phones */}
-        <section className="order-last flex min-h-0 flex-col overflow-hidden border-t border-border max-h-[46vh] lg:order-none lg:w-[290px] lg:shrink-0 lg:border-t-0 lg:max-h-none">
-          <div className="flex items-center gap-1.5 border-b border-border px-2.5 py-2">
+        <section className="order-last flex min-h-0 flex-col overflow-hidden border-t border-border-strong max-h-[46vh] lg:order-none lg:w-[288px] lg:shrink-0 lg:border-t-0 lg:max-h-none">
+          <div className="flex items-stretch border-b border-border-strong">
             {(["open", "closed"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setPosTab(t)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                  posTab === t ? "bg-surface2 text-fg" : "text-muted hover:text-fg"
+                className={`flex-1 border-r border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wide transition last:border-r-0 ${
+                  posTab === t
+                    ? "bg-surface2 text-fg shadow-[inset_0_-2px_0_rgb(var(--brand))]"
+                    : "text-muted hover:bg-surface2/60 hover:text-fg"
                 }`}
               >
-                {t} ({t === "open" ? openTrades.length : closed.length})
+                {t} · {t === "open" ? openTrades.length : closed.length}
               </button>
             ))}
           </div>
@@ -479,7 +481,7 @@ export function TradeTerminal() {
 
         {/* Chart + live digits — shown first on phones */}
         <section className="order-first flex h-[36vh] flex-col overflow-hidden lg:order-none lg:h-auto lg:min-h-0 lg:flex-1">
-            <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5 sm:px-4">
+            <div className="flex items-center justify-between gap-2 border-b border-border-strong bg-surface2/30 px-3 py-2 sm:px-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <MarketDropdown symbol={symbol} onSelect={setSymbol} />
@@ -492,14 +494,14 @@ export function TradeTerminal() {
                     onClear={() => setAlertPrice(null)}
                   />
                 </div>
-                <div className="truncate text-[11px] text-muted">
-                  {market.volatility} volatility · synthetic index
+                <div className="truncate text-[10px] uppercase tracking-wide text-muted">
+                  {market.volatility} vol · synthetic index
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+              <div className="flex shrink-0 items-center gap-3 sm:gap-5">
                 {curDigit != null && (
                   <div className="hidden text-center sm:block">
-                    <div className="text-[9px] uppercase tracking-wider text-muted">Last digit</div>
+                    <div className="term-label">Last digit</div>
                     <div className="tabular text-2xl font-black leading-none text-brand">
                       {curDigit}
                     </div>
@@ -514,7 +516,7 @@ export function TradeTerminal() {
                     {feed.last ? feed.last.price.toFixed(dp) : "—"}
                   </div>
                   <div
-                    className={`mt-0.5 text-xs font-semibold ${
+                    className={`tabular mt-0.5 text-xs font-bold ${
                       changePct >= 0 ? "text-up" : "text-down"
                     }`}
                   >
@@ -524,14 +526,17 @@ export function TradeTerminal() {
                 </div>
               </div>
             </div>
-            <div className="hidden items-center gap-4 border-b border-border px-4 py-1.5 text-[11px] text-muted sm:flex">
+            <div className="hidden items-center gap-5 border-b border-border px-4 py-1.5 text-[10px] uppercase tracking-wide text-muted sm:flex">
               <span>
                 High <span className="tabular text-up">{hi ? hi.toFixed(dp) : "—"}</span>
               </span>
               <span>
                 Low <span className="tabular text-down">{lo ? lo.toFixed(dp) : "—"}</span>
               </span>
-              <span className="ml-auto">{demo ? "Demo · practice market" : "Live · Deriv feed"}</span>
+              <span className="ml-auto flex items-center gap-1.5">
+                <span className={`h-1.5 w-1.5 rounded-full ${demo ? "bg-gold" : "bg-up"}`} />
+                {demo ? "Demo · practice market" : "Live · Deriv feed"}
+              </span>
             </div>
             <div className="relative min-h-0 flex-1">
               {feed.points.length === 0 ? (
@@ -549,14 +554,14 @@ export function TradeTerminal() {
               {resultFlash && (
                 <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center">
                   <div
-                    className={`animate-fade-up rounded-2xl border px-6 py-3 text-center shadow-card backdrop-blur ${
-                      resultFlash.won ? "border-up/50 bg-up/15" : "border-down/50 bg-down/15"
+                    className={`animate-fade-up rounded border px-6 py-3 text-center shadow-card backdrop-blur ${
+                      resultFlash.won ? "border-up/60 bg-up/15" : "border-down/60 bg-down/15"
                     }`}
                   >
                     <div className={`tabular text-3xl font-black ${resultFlash.won ? "text-up" : "text-down"}`}>
                       {money(resultFlash.profit, { sign: true })}
                     </div>
-                    <div className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                    <div className="mt-0.5 term-label">
                       {resultFlash.label} · {resultFlash.sub}
                     </div>
                   </div>
@@ -566,12 +571,12 @@ export function TradeTerminal() {
 
             {/* Digit strip — part of the chart, shown while trading digits */}
             {contract === "digit" && (
-              <div className="shrink-0 border-t border-border bg-surface2/70 px-2 py-3 sm:px-4">
+              <div className="shrink-0 border-t border-border-strong bg-surface2/70 px-2 py-2.5 sm:px-4">
                 <div className="mb-2 flex items-center justify-between px-1">
-                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-fg">
+                  <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-fg">
                     <Hash className="h-3.5 w-3.5 text-brand" /> Live last digits
                   </span>
-                  <span className="hidden text-[11px] text-muted sm:block">tap a number to set your barrier</span>
+                  <span className="hidden term-label sm:block">tap a number to set your barrier</span>
                 </div>
                 <DigitHeatmap
                   points={feed.points}
@@ -584,11 +589,15 @@ export function TradeTerminal() {
             )}
           </section>
 
-        {/* Ticket */}
-        <section className="min-h-0 overflow-y-auto border-t border-border p-3 sm:p-3.5 lg:w-[360px] lg:shrink-0 lg:border-t-0">
+        {/* Ticket — order side-rail */}
+        <section className="min-h-0 overflow-y-auto border-t border-border-strong bg-surface2/20 p-2.5 sm:p-3 lg:w-[344px] lg:shrink-0 lg:border-t-0">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="term-label">Order ticket</span>
+              <span className="term-label !text-muted">{demo ? "DEMO" : "LIVE"}</span>
+            </div>
             {/* Manual / Auto + AI */}
-            <div className="mb-2 flex items-center gap-2 sm:mb-3">
-              <div className="flex flex-1 rounded-xl bg-surface2 p-1">
+            <div className="mb-2 flex items-center gap-2 sm:mb-2.5">
+              <div className="flex flex-1 rounded border border-border bg-surface2 p-0.5">
                 {(["manual", "auto"] as const).map((mo) => (
                   <button
                     key={mo}
@@ -596,8 +605,8 @@ export function TradeTerminal() {
                       setMode(mo);
                       if (mo === "auto" && contract === "mult") setContract("digit");
                     }}
-                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition ${
-                      mode === mo ? "bg-brand text-white shadow-glow" : "text-muted hover:text-fg"
+                    className={`flex-1 rounded-sm py-1.5 text-[11px] font-bold uppercase tracking-wide transition ${
+                      mode === mo ? "bg-brand text-white" : "text-muted hover:text-fg"
                     }`}
                   >
                     {mo}
@@ -777,8 +786,8 @@ export function TradeTerminal() {
 
       {toast && (
         <div
-          className={`fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-xl border px-4 py-3 text-sm font-medium shadow-card ${
-            toast.ok ? "border-up/40 bg-surface text-up" : "border-down/40 bg-surface text-down"
+          className={`fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded border px-4 py-3 text-sm font-semibold shadow-card ${
+            toast.ok ? "border-up/50 bg-surface text-up" : "border-down/50 bg-surface text-down"
           }`}
         >
           {toast.msg}
@@ -854,14 +863,14 @@ function MultControls({
           </button>
         ))}
       </div>
-      <div className="mt-3 rounded-xl border border-border bg-surface2/60 px-3 py-2 text-[11px]">
-        <div className="flex items-center justify-between">
-          <span className="text-muted">P&L moves</span>
-          <span className="font-bold text-brand">{multiplier}× market</span>
+      <div className="mt-3 divide-y divide-border rounded border border-border bg-surface2/60 px-3 text-[11px]">
+        <div className="flex items-center justify-between py-1.5">
+          <span className="term-label">P&L moves</span>
+          <span className="tabular font-bold text-brand">{multiplier}× market</span>
         </div>
-        <div className="mt-0.5 flex items-center justify-between">
-          <span className="text-muted">Stop out at</span>
-          <span className="font-bold text-down">{stopOutPct}% move</span>
+        <div className="flex items-center justify-between py-1.5">
+          <span className="term-label">Stop out at</span>
+          <span className="tabular font-bold text-down">{stopOutPct}% move</span>
         </div>
       </div>
       <div className="mt-2.5 grid grid-cols-2 gap-2.5">
@@ -914,12 +923,12 @@ function DigitControls({
       </div>
 
       {needsDigit && (
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-surface2/60 px-3 py-2">
-          <span className="text-xs text-muted">
+        <div className="mt-3 flex items-center justify-between rounded border border-border bg-surface2/60 px-3 py-2">
+          <span className="term-label">
             {subtype === "over_under" ? "Barrier digit" : "Target digit"}
           </span>
           <div className="flex items-center gap-2">
-            <span className="tabular flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+            <span className="tabular flex h-7 w-7 items-center justify-center rounded bg-brand text-sm font-bold text-white">
               {barrier}
             </span>
             <span className="text-[10px] text-muted">tap chart digits</span>
@@ -991,8 +1000,8 @@ function AlertControl({
       <button
         onClick={() => (open ? setOpen(false) : openPopover())}
         title="Set a price alert"
-        className={`flex h-6 items-center gap-1 rounded-full px-2 text-[10px] font-semibold transition ${
-          target != null ? "bg-brand/15 text-brand" : "bg-surface2 text-muted hover:text-fg"
+        className={`flex h-6 items-center gap-1 rounded border px-2 text-[10px] font-bold uppercase tracking-wide transition ${
+          target != null ? "border-brand/50 bg-brand/15 text-brand" : "border-border bg-surface2 text-muted hover:text-fg"
         }`}
       >
         {target != null ? <BellRing className="h-3 w-3" /> : <Bell className="h-3 w-3" />}
@@ -1001,8 +1010,8 @@ function AlertControl({
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-50 mt-1 w-52 rounded-xl border border-border bg-surface p-3 shadow-card">
-            <div className="mb-1.5 text-[11px] font-semibold text-muted">Alert me when price hits</div>
+          <div className="absolute left-0 top-full z-50 mt-1 w-52 rounded border border-border-strong bg-surface p-3 shadow-card">
+            <div className="mb-1.5 term-label">Alert me when price hits</div>
             <div className="flex gap-1.5">
               <input
                 className="input tabular h-9 text-sm"
@@ -1042,7 +1051,7 @@ function MarketDropdown({ symbol, onSelect }: { symbol: string; onSelect: (s: st
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex max-w-[56vw] items-center gap-1.5 rounded-lg px-1.5 py-0.5 text-sm font-bold transition hover:bg-surface2 sm:max-w-none sm:text-base"
+        className="flex max-w-[56vw] items-center gap-1.5 rounded border border-border bg-surface2/60 px-2 py-1 text-sm font-bold transition hover:border-brand/50 sm:max-w-none sm:text-[15px]"
       >
         <span className="truncate">{market.name}</span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition ${open ? "rotate-180" : ""}`} />
@@ -1050,7 +1059,7 @@ function MarketDropdown({ symbol, onSelect }: { symbol: string; onSelect: (s: st
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-50 mt-1 max-h-72 w-64 overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-card">
+          <div className="absolute left-0 top-full z-50 mt-1 max-h-72 w-64 overflow-y-auto rounded border border-border-strong bg-surface shadow-card">
             {MARKETS.map((m) => (
               <button
                 key={m.symbol}
@@ -1058,12 +1067,12 @@ function MarketDropdown({ symbol, onSelect }: { symbol: string; onSelect: (s: st
                   onSelect(m.symbol);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${
+                className={`flex w-full items-center justify-between border-b border-border/60 px-3 py-2 text-left text-sm transition last:border-b-0 ${
                   m.symbol === symbol ? "bg-brand/10 text-brand" : "hover:bg-surface2"
                 }`}
               >
                 <span className="font-medium">{m.name}</span>
-                <span className="text-[10px] text-muted">{m.short}</span>
+                <span className="tabular text-[10px] text-muted">{m.short}</span>
               </button>
             ))}
           </div>
@@ -1118,7 +1127,7 @@ function ChartPositions({ trades, livePrice }: { trades: Trade[]; livePrice: num
           right = secs <= 0 ? <span className="font-semibold text-gold">settling…</span> : <span className="tabular font-bold">{secs}s</span>;
         }
         return (
-          <div key={t.id} className="flex items-center gap-2 rounded-lg border border-border bg-bg/80 px-2.5 py-1 text-[11px] shadow-card backdrop-blur">
+          <div key={t.id} className="flex items-center gap-2 rounded border border-border-strong bg-bg/80 px-2.5 py-1 text-[11px] shadow-card backdrop-blur">
             <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${up ? "bg-up" : "bg-down"}`} />
             <span className={`font-bold ${up ? "text-up" : "text-down"}`}>{label}</span>
             <span className="text-muted">{money(Number(t.stake))}</span>
@@ -1133,8 +1142,8 @@ function ChartPositions({ trades, livePrice }: { trades: Trade[]; livePrice: num
 function ConnBadge({ connected }: { connected: boolean }) {
   return (
     <span
-      className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-        connected ? "bg-up/10 text-up" : "bg-muted/10 text-muted"
+      className={`flex items-center gap-1 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+        connected ? "border-up/40 bg-up/10 text-up" : "border-border bg-muted/10 text-muted"
       }`}
     >
       {connected ? <Wifi className="h-2.5 w-2.5" /> : <WifiOff className="h-2.5 w-2.5" />}
@@ -1157,8 +1166,8 @@ function ChartSkeleton({ connected }: { connected: boolean }) {
 
 function PayoutRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-surface2/60 px-3 py-2">
-      <span className="flex items-center gap-1.5 text-xs text-muted">
+    <div className="mt-3 flex items-center justify-between rounded border border-border bg-surface2/60 px-3 py-2">
+      <span className="flex items-center gap-1.5 term-label">
         <Zap className="h-3.5 w-3.5 text-gold" /> {label}
       </span>
       <span className="tabular font-bold text-brand">{value}</span>
@@ -1324,7 +1333,7 @@ function OpenPositions({ trades, settled = [], onSettled, liveSymbol, livePrice,
   }
 
   return (
-    <div className="flex flex-col gap-2 p-2">
+    <div className="flex flex-col divide-y divide-border/70">
       {/* Just-settled trades resolving before they drop to history */}
       {settledList.map((t) => {
         const won = t.status === "won";
@@ -1334,16 +1343,16 @@ function OpenPositions({ trades, settled = [], onSettled, liveSymbol, livePrice,
           <div
             key={`s-${t.id}`}
             onClick={() => onSelect?.(t)}
-            className={`animate-settle-out flex cursor-pointer items-center justify-between rounded-xl border px-3.5 py-2.5 ${
-              won ? "border-up/40 bg-up/10" : "border-down/40 bg-down/10"
+            className={`animate-settle-out flex cursor-pointer items-center justify-between border-l-2 px-3 py-2 ${
+              won ? "border-l-up bg-up/10" : "border-l-down bg-down/10"
             }`}
           >
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold">{marketBySymbol(t.symbol)?.short ?? t.symbol}</span>
-                <span className={`rounded px-1 py-0.5 text-[9px] font-bold ${up ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>{labelOf(t)}</span>
+                <span className="text-sm font-bold">{marketBySymbol(t.symbol)?.short ?? t.symbol}</span>
+                <span className={`rounded-sm px-1 py-0.5 text-[9px] font-bold ${up ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>{labelOf(t)}</span>
               </div>
-              <div className={`text-[11px] font-semibold ${won ? "text-up" : "text-down"}`}>
+              <div className={`term-label ${won ? "!text-up" : "!text-down"}`}>
                 {won ? "WON" : "LOST"}
                 {t.kind === "digit" && t.exit_digit != null ? ` · digit ${t.exit_digit}` : ""}
               </div>
@@ -1439,14 +1448,14 @@ function Row({
   return (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between rounded-xl border border-border bg-surface2/40 px-3.5 py-2.5 ${
-        onClick ? "cursor-pointer transition hover:border-brand/40 hover:bg-surface2/70" : ""
-      }`}
+      className={`flex items-center justify-between border-l-2 px-3 py-2 ${
+        tagColor === "up" ? "border-l-up/70" : "border-l-down/70"
+      } ${onClick ? "cursor-pointer transition hover:bg-surface2/70" : ""}`}
     >
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold">{m}</span>
-          <span className={`rounded px-1 py-0.5 text-[9px] font-bold ${tagColor === "up" ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>
+          <span className="text-sm font-bold">{m}</span>
+          <span className={`rounded-sm px-1 py-0.5 text-[9px] font-bold ${tagColor === "up" ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>
             {tag}
           </span>
         </div>
@@ -1479,7 +1488,7 @@ function ClosedPositions({ trades, onSelect }: { trades: Trade[]; onSelect?: (t:
       : -Number(t.stake);
 
   return (
-    <div className="flex flex-col gap-2 p-2">
+    <div className="flex flex-col divide-y divide-border/70">
       {trades.map((t) => {
         const won = t.status === "won";
         const up = ["rise", "up", "even", "over", "matches"].includes(t.direction);

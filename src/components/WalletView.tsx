@@ -100,17 +100,17 @@ export function WalletView() {
   return (
     <div className="space-y-5">
       {/* Balance banner */}
-      <div className={`card relative overflow-hidden p-6 ${demo ? "border-gold/40" : ""}`}>
-        <div className={`pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl ${demo ? "bg-gold/20" : "bg-brand/20"}`} />
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted">
+      <div className={`card relative overflow-hidden p-5 ${demo ? "border-gold/50" : ""}`}>
+        <div className={`pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl ${demo ? "bg-gold/15" : "bg-brand/15"}`} />
+        <div className="flex items-center gap-2 term-label">
           {demo ? "Demo balance" : "Available balance"}
           {demo && (
-            <span className="rounded-md bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-gold">
+            <span className="rounded-sm bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-gold">
               PRACTICE
             </span>
           )}
         </div>
-        <div className={`tabular mt-1 text-4xl font-black ${demo ? "text-gold" : "text-fg"}`}>
+        <div className={`tabular mt-1.5 text-4xl font-black ${demo ? "text-gold" : "text-fg"}`}>
           {loading ? "—" : money(balance)}
         </div>
         <div className="mt-1 text-xs text-muted">
@@ -188,7 +188,7 @@ export function WalletView() {
 
         {/* Transactions — scoped to the active account */}
         <div className="card overflow-hidden">
-          <div className="border-b border-border px-5 py-3 font-bold">
+          <div className="border-b border-border-strong bg-surface2/30 px-4 py-2.5 term-label !text-fg">
             Recent activity
           </div>
           {loading && !data ? (
@@ -410,7 +410,7 @@ function CryptoDepositPanel({
       {data.qr && (
         <div className="flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={data.qr} alt="Deposit address QR" className="rounded-xl border border-border bg-white p-1" width={180} height={180} />
+          <img src={data.qr} alt="Deposit address QR" className="rounded border border-border bg-white p-1" width={180} height={180} />
         </div>
       )}
 
@@ -419,7 +419,7 @@ function CryptoDepositPanel({
           {data.currency.toUpperCase()} address
         </label>
         <div className="flex gap-2">
-          <div className="tabular flex-1 break-all rounded-xl border border-border bg-surface2 px-3 py-2.5 text-xs">
+          <div className="tabular flex-1 break-all rounded border border-border bg-surface2 px-3 py-2.5 text-xs">
             {data.address}
           </div>
           <button onClick={copyAddr} className="btn btn-brand shrink-0 px-3 py-2.5 text-sm">
@@ -429,7 +429,7 @@ function CryptoDepositPanel({
       </div>
 
       <div
-        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm ${
+        className={`flex items-center gap-2 rounded border px-3 py-2.5 text-sm ${
           status === "failed" ? "border-down/40 text-down" : "border-brand/40 text-fg"
         }`}
       >
@@ -445,7 +445,7 @@ function CryptoDepositPanel({
         )}
       </div>
 
-      <div className="rounded-xl border border-gold/30 bg-gold/5 px-3 py-2 text-[11px] text-muted">
+      <div className="rounded border border-gold/30 bg-gold/5 px-3 py-2 text-[11px] text-muted">
         Send only <b>{data.currency.toUpperCase()}</b> to this address. Sending a different coin or network may lose your funds.
       </div>
 
@@ -807,7 +807,7 @@ function MoneyForm({
           </label>
           {defaultPhone ? (
             <>
-              <div className="flex items-center gap-2 rounded-xl border border-border bg-surface2/50 px-3 py-2.5">
+              <div className="flex items-center gap-2 rounded border border-border bg-surface2/50 px-3 py-2.5">
                 <Lock className="h-4 w-4 shrink-0 text-muted" />
                 <span className="tabular flex-1 text-sm font-semibold">{fmtLocalPhone(defaultPhone)}</span>
                 <span className="rounded-md bg-up/10 px-1.5 py-0.5 text-[10px] font-bold text-up">VERIFIED</span>
@@ -818,7 +818,7 @@ function MoneyForm({
               </p>
             </>
           ) : (
-            <div className="rounded-xl border border-gold/40 bg-gold/10 px-3 py-2.5 text-xs text-fg">
+            <div className="rounded border border-gold/40 bg-gold/10 px-3 py-2.5 text-xs text-fg">
               Add and verify your phone under{" "}
               <a href="/profile" className="font-semibold text-brand underline">Profile</a>{" "}
               to {kind === "deposit" ? "deposit" : "withdraw"} via {methodDef.label}.
@@ -844,7 +844,7 @@ function MoneyForm({
       ) : null}
 
       {needsPhone && amountNum > 0 && (
-        <div className="flex items-center justify-between rounded-xl border border-border bg-surface2/50 px-3 py-2 text-xs">
+        <div className="flex items-center justify-between rounded border border-border bg-surface2/50 px-3 py-2 text-xs">
           <span className="text-muted">
             {kind === "deposit" ? "You’ll pay" : "You’ll receive"}
           </span>
@@ -912,7 +912,7 @@ function TxnList({ txns }: { txns: Txn[] }) {
   return (
     <div className="divide-y divide-border">
       {txns.map((t) => (
-        <div key={t.id} className="px-5 py-3">
+        <div key={t.id} className="px-4 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <TxnIcon type={t.type} />
@@ -950,14 +950,14 @@ function WithdrawalTrack({ status, receipt }: { status: string; receipt?: string
 
   if (rejected) {
     return (
-      <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-down/30 bg-down/5 px-3 py-1.5 text-[11px] text-down">
+      <div className="mt-2 flex items-center gap-1.5 rounded border border-down/30 bg-down/5 px-3 py-1.5 text-[11px] text-down">
         <XCircle className="h-3.5 w-3.5" /> Payout didn’t go through — amount refunded to your balance.
       </div>
     );
   }
 
   return (
-    <div className="mt-2 rounded-lg border border-border bg-surface2/40 px-3 py-2">
+    <div className="mt-2 rounded border border-border bg-surface2/40 px-3 py-2">
       <div className="flex items-center">
         <TrackStep label="Requested" done />
         <TrackLine done />
