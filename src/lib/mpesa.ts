@@ -34,13 +34,32 @@ export function isMpesaConfigured(): boolean {
   );
 }
 
-// B2C (withdrawals) needs extra credentials on top of the deposit ones.
+// B2C (withdrawals) uses its OWN dedicated paybill credentials so they never get
+// confused with the STK / deposit M-Pesa keys. Each value prefers a MPESA_B2C_*
+// var and falls back to the shared MPESA_* one for backward compatibility. So a
+// separate B2C paybill is configured entirely with MPESA_B2C_* vars, while any
+// existing deposit/STK MPESA_* credentials stay exactly as they are.
+function b2cVal(name: string): string {
+  return env(`MPESA_B2C_${name}`) || env(`MPESA_${name}`);
+}
+function b2cIsProduction(): boolean {
+  const v = (env("MPESA_B2C_ENV") || mpesaEnvValue()).toLowerCase();
+  return v === "production" || v === "prod" || v === "live";
+}
+function b2cBase(): string {
+  return b2cIsProduction() ? PROD_BASE : SANDBOX_BASE;
+}
+
+// B2C is independent of the STK/deposit config — a paybill set up purely for
+// payouts (its own consumer key/secret, initiator, security credential and
+// shortcode) is enough, no STK passkey required.
 export function isB2cConfigured(): boolean {
   return !!(
-    isMpesaConfigured() &&
-    process.env.MPESA_INITIATOR_NAME &&
-    process.env.MPESA_SECURITY_CREDENTIAL &&
-    (process.env.MPESA_B2C_SHORTCODE || process.env.MPESA_SHORTCODE)
+    b2cVal("CONSUMER_KEY") &&
+    b2cVal("CONSUMER_SECRET") &&
+    b2cVal("INITIATOR_NAME") &&
+    b2cVal("SECURITY_CREDENTIAL") &&
+    b2cVal("SHORTCODE")
   );
 }
 
@@ -267,6 +286,41 @@ export type B2cResult = {
   ResponseDescription: string;
 };
 
+// OAuth + POST helpers for the B2C paybill — use the dedicated B2C credentials
+// and environment, kept separate from the STK/deposit token above.
+async function b2cAccessToken(): Promise<string> {
+  const key = b2cVal("CONSUMER_KEY");
+  const secret = b2cVal("CONSUMER_SECRET");
+  const res = await fetch(`${b2cBase()}/oauth/v1/generate?grant_type=client_credentials`, {
+    headers: { Authorization: `Basic ${b64(`${key}:${secret}`)}` },
+    cache: "no-store",
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.access_token) {
+    const where = b2cIsProduction() ? "production" : "sandbox";
+    throw new Error(
+      `M-Pesa B2C auth failed on the ${where} endpoint (${res.status}). ` +
+        `Check MPESA_B2C_CONSUMER_KEY / MPESA_B2C_CONSUMER_SECRET and that MPESA_B2C_ENV matches your keys.`
+    );
+  }
+  return json.access_token as string;
+}
+
+async function b2cDaraja<T = any>(path: string, body: unknown): Promise<T> {
+  const token = await b2cAccessToken();
+  const res = await fetch(`${b2cBase()}${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(json?.errorMessage || `M-Pesa B2C request failed (${res.status})`);
+  }
+  return json as T;
+}
+
 /** Send `amountKes` from the business shortcode to the customer's phone. */
 export async function b2cPayment(opts: {
   phone: string;
@@ -275,10 +329,10 @@ export async function b2cPayment(opts: {
   resultUrl: string;
   timeoutUrl: string;
 }): Promise<B2cResult> {
-  const shortcode = env("MPESA_B2C_SHORTCODE") || env("MPESA_SHORTCODE");
-  return daraja<B2cResult>("/mpesa/b2c/v1/paymentrequest", {
-    InitiatorName: env("MPESA_INITIATOR_NAME"),
-    SecurityCredential: env("MPESA_SECURITY_CREDENTIAL"),
+  const shortcode = b2cVal("SHORTCODE");
+  return b2cDaraja<B2cResult>("/mpesa/b2c/v1/paymentrequest", {
+    InitiatorName: b2cVal("INITIATOR_NAME"),
+    SecurityCredential: b2cVal("SECURITY_CREDENTIAL"),
     CommandID: process.env.MPESA_B2C_COMMAND || "BusinessPayment",
     Amount: opts.amountKes,
     PartyA: shortcode,

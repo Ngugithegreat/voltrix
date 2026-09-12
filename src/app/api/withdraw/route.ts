@@ -167,7 +167,7 @@ export async function POST(req: Request) {
   const balanceAfter = Number(debit[0].balance);
 
   // ---- Automated payout via TeronaPay (KES → M-Pesa B2C, UGX → mobile money) ----
-  if (automated && phone && isTeronaConfigured()) {
+  if (automated && phone && isTeronaConfigured() && !(method === "mpesa" && isB2cConfigured())) {
     const currency = isTzPayout ? "TZS" : isUgPayout ? "UGX" : "KES";
     const localAmount = isTzPayout ? centsToTzs(amount) : isUgPayout ? centsToUgx(amount) : centsToKesWithdraw(amount);
     const idem = `wdl_${session.id}_${randomUUID().slice(0, 12)}`;
