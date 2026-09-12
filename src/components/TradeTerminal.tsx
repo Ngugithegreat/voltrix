@@ -80,7 +80,7 @@ export function TradeTerminal() {
   const [stake, setStake] = useState("10");
   const [duration, setDuration] = useState(60);
   const [multiplier, setMultiplier] = useState(DEFAULT_MULTIPLIER);
-  const [subtype, setSubtype] = useState<DigitSubtype>("over_under");
+  const [subtype, setSubtype] = useState<DigitSubtype>("even_odd");
   const [barrier, setBarrier] = useState(5);
   const [digitTicks, setDigitTicks] = useState(DEFAULT_DIGIT_TICKS);
   const [mode, setMode] = useState<"manual" | "auto">("manual");

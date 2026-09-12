@@ -27,16 +27,16 @@ import { railsForCountry } from "@/lib/countries";
 import { ListSkeleton } from "./Skeleton";
 import { NotificationToggle } from "./NotificationToggle";
 
-type MethodDef = { id: string; label: string; hint: string; icon: any };
+type MethodDef = { id: string; label: string; note?: string; flag?: string; hint: string; icon: any };
 
 const METHOD_DEFS: Record<string, MethodDef> = {
-  mpesa: { id: "mpesa", label: "M-Pesa", hint: "Phone e.g. 0712345678", icon: Smartphone },
-  mtn: { id: "mtn", label: "MTN", hint: "Phone e.g. 0772123456", icon: Smartphone },
-  airtel: { id: "airtel", label: "Airtel", hint: "Phone e.g. 0752123456", icon: Smartphone },
-  tzmobile: { id: "tzmobile", label: "Mobile Money", hint: "Phone e.g. 0712345678", icon: Smartphone },
-  card: { id: "card", label: "Card", hint: "", icon: CreditCard },
-  bank: { id: "bank", label: "Bank", hint: "Account number / name", icon: Landmark },
-  crypto: { id: "crypto", label: "USDT", hint: "USDT / BTC & more", icon: Bitcoin },
+  mpesa: { id: "mpesa", label: "M-Pesa", note: "Kenya", flag: "🇰🇪", hint: "Phone e.g. 0712345678", icon: Smartphone },
+  mtn: { id: "mtn", label: "MTN MoMo", note: "Uganda", flag: "🇺🇬", hint: "Phone e.g. 0772123456", icon: Smartphone },
+  airtel: { id: "airtel", label: "Airtel Money", note: "Uganda", flag: "🇺🇬", hint: "Phone e.g. 0752123456", icon: Smartphone },
+  tzmobile: { id: "tzmobile", label: "Mobile Money", note: "Tanzania", flag: "🇹🇿", hint: "Phone e.g. 0712345678", icon: Smartphone },
+  card: { id: "card", label: "Card", note: "Visa · Mastercard", flag: "💳", hint: "", icon: CreditCard },
+  bank: { id: "bank", label: "Bank", note: "Transfer", flag: "🏦", hint: "Account number / name", icon: Landmark },
+  crypto: { id: "crypto", label: "Crypto", note: "USDT · BTC · more", flag: "₿", hint: "USDT / BTC & more", icon: Bitcoin },
 };
 
 // Minimum crypto deposit in USD (mirrors the server's CRYPTO_MIN_USD). Small
@@ -55,8 +55,11 @@ function fmtLocalPhone(p: string | null | undefined): string {
 }
 
 // Deposit rails come from the user's country.
+const ALL_MOBILE_RAILS = ["mpesa", "mtn", "airtel", "tzmobile"];
 function depositMethods(country: string | null | undefined): string[] {
-  return railsForCountry(country);
+  const local = (railsForCountry(country) as string[]).filter((r) => r !== "crypto" && r !== "card");
+  const rest = ALL_MOBILE_RAILS.filter((r) => !local.includes(r));
+  return [...local, ...rest, "crypto"];
 }
 function withdrawMethods(country: string | null | undefined): string[] {
   const out: string[] = [];
@@ -765,20 +768,28 @@ function MoneyForm({
         )}
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Method</label>
-        <div className="grid grid-cols-4 gap-2">
+        <label className="mb-1 block text-xs font-medium text-muted">
+          {kind === "deposit" ? "Pay with" : "Send to"}
+        </label>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {methods.map((m) => {
             const Icon = m.icon;
+            const active = method === m.id;
             return (
               <button
                 key={m.id}
                 onClick={() => setMethod(m.id)}
-                className={`btn flex-col gap-1 py-2 text-[11px] ${
-                  method === m.id ? "btn-brand" : "btn-ghost"
+                className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-left transition ${
+                  active ? "border-brand bg-brand/10 ring-1 ring-brand/40" : "border-border bg-surface2/40 hover:border-brand/50"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                {m.label}
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base ${active ? "bg-brand/20" : "bg-surface2"}`}>
+                  {m.flag ? <span className="leading-none">{m.flag}</span> : <Icon className="h-4 w-4" />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-semibold">{m.label}</span>
+                  {m.note && <span className="block truncate text-[10px] text-muted">{m.note}</span>}
+                </span>
               </button>
             );
           })}
