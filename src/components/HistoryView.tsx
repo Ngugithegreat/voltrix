@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useApp, Trade, Txn } from "./app-context";
 import { marketBySymbol } from "@/lib/markets";
-import { money, shortTime } from "@/lib/format";
+import { money, shortTime, txnLabel, methodLabel } from "@/lib/format";
 import { ArrowUp, ArrowDown, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { TradeReceipt } from "./TradeReceipt";
 
@@ -192,8 +192,8 @@ function TxnRow({ x }: { x: Txn }) {
           <Icon className="h-4 w-4" />
         </div>
         <div>
-          <div className="text-sm font-semibold capitalize">
-            {kind} <span className="font-normal text-muted">{showMethod ? x.method || "" : ""}</span>
+          <div className="text-sm font-semibold">
+            {txnLabel(kind)} <span className="font-normal text-muted">{showMethod ? methodLabel(x.method) : ""}</span>
           </div>
           <div className="tabular text-[11px] text-muted">
             {x.reference ? `${x.reference} · ` : ""}

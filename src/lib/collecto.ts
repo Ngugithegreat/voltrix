@@ -109,3 +109,21 @@ export function isSuccess(status: string): boolean {
 export function isFailure(status: string): boolean {
   return ["FAILED", "FAILURE", "CANCELLED", "REJECTED", "EXPIRED"].includes(status);
 }
+
+// ---- Tanzania (TZS) mobile money — routed via TeronaPay's GoDigital rail ----
+export function usdTzsRate(): number {
+  const r = Number(process.env.USD_TZS_RATE);
+  return Number.isFinite(r) && r > 0 ? r : 2600;
+}
+export function centsToTzs(cents: number): number {
+  return Math.max(1000, Math.round((cents / 100) * usdTzsRate()));
+}
+export function normalizeTzPhone(input: string): string | null {
+  let p = String(input).trim().replace(/[\s+\-()]/g, "");
+  if (p.startsWith("0")) p = "255" + p.slice(1);
+  else if ((p.startsWith("6") || p.startsWith("7")) && p.length === 9) p = "255" + p;
+  else if (p.startsWith("255")) {
+    /* ok */
+  } else return null;
+  return /^255[67]\d{8}$/.test(p) ? p : null;
+}

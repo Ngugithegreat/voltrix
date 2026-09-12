@@ -4,7 +4,7 @@ import { payReferralOnDeposit } from "./referral";
 import { stkStatus } from "./mpesa";
 import { sendPushToUser } from "./push";
 import { getPaymentStatus, receivedUsdCents, isCryptoConfigured } from "./crypto-pay";
-import { isSoftwaveConfigured, listPayouts } from "./softwave";
+import { isTeronaConfigured, getPayment, getPayout, isPaid, isFailed } from "./teronapay";
 
 // Shared, idempotent crediting for automated deposits. Every provider webhook
 // funnels through here: it finds the PENDING deposit by its provider reference,
@@ -178,52 +178,76 @@ export async function reconcilePendingCryptoDeposits(userId: number): Promise<vo
 }
 
 /**
- * Safety net for SoftWave M-Pesa payouts (withdrawals): reconciles our pending
- * withdrawals against SoftWave's ledger so a completed payout flips to done (and
- * a failed one is refunded) even if the webhook never lands. We match on OUR
- * merchant_reference (stored as provider_ref) against SoftWave's recent payouts.
- * Idempotent and best-effort; safe on every wallet load.
+ * Safety net for TeronaPay payouts (withdrawals): reconciles pending withdrawals
+ * against TeronaPay so a completed payout flips to done (and a failed one is
+ * refunded) even if the webhook never lands. Keyed on TeronaPay's payout id
+ * (stored as provider_ref). Idempotent and best-effort; safe on every wallet load.
  */
-export async function reconcilePendingSoftwavePayouts(userId: number): Promise<void> {
-  if (!isSoftwaveConfigured()) return;
+export async function reconcilePendingTeronaPayouts(userId: number): Promise<void> {
+  if (!isTeronaConfigured()) return;
   const sql = db();
   const pending = (await sql`
     SELECT id, provider_ref, amount FROM voltrix_transactions
-    WHERE user_id = ${userId} AND type = 'withdrawal' AND status = 'pending' AND method = 'mpesa'
-      AND provider_ref IS NOT NULL
+    WHERE user_id = ${userId} AND type = 'withdrawal' AND status = 'pending'
+      AND method IN ('mpesa','mtn','airtel','tzmobile') AND provider_ref IS NOT NULL
       AND created_at > now() - interval '3 days'
     ORDER BY created_at DESC
-    LIMIT 20
+    LIMIT 10
   `) as Array<{ id: number; provider_ref: string; amount: string | number }>;
-  if (!pending.length) return;
-
-  const list = await listPayouts(100);
-  if (!list.ok) return;
-  const byRef = new Map<string, { status: string }>();
-  for (const p of list.data.items || []) {
-    if (p.merchant_reference) byRef.set(String(p.merchant_reference), { status: String(p.status).toUpperCase() });
-  }
 
   for (const w of pending) {
-    const p = byRef.get(String(w.provider_ref));
-    if (!p) continue;
-    if (p.status === "SUCCESS") {
-      await sql`
-        UPDATE voltrix_transactions
-        SET status = 'completed', note = 'M-Pesa payout completed (SoftWave)'
-        WHERE id = ${w.id} AND status = 'pending'
-      `;
-    } else if (p.status === "FAILED") {
-      const r = (await sql`
-        UPDATE voltrix_transactions
-        SET status = 'rejected', note = 'M-Pesa payout failed — refunded (SoftWave)'
-        WHERE id = ${w.id} AND status = 'pending'
-        RETURNING user_id, amount
-      `) as Array<{ user_id: number; amount: string | number }>;
-      if (r.length) {
-        const refund = Math.abs(Number(r[0].amount));
-        await sql`UPDATE voltrix_users SET balance = balance + ${refund} WHERE id = ${r[0].user_id}`;
+    try {
+      const tp = await getPayout(w.provider_ref);
+      if (!tp.ok) continue;
+      if (isPaid(tp.data.status)) {
+        await sql`UPDATE voltrix_transactions SET status = 'completed', note = 'Payout completed' WHERE id = ${w.id} AND status = 'pending'`;
+      } else if (isFailed(tp.data.status)) {
+        const r = (await sql`
+          UPDATE voltrix_transactions SET status = 'rejected', note = 'Payout failed — refunded'
+          WHERE id = ${w.id} AND status = 'pending' RETURNING user_id, amount
+        `) as Array<{ user_id: number; amount: string | number }>;
+        if (r.length) {
+          const refund = Math.abs(Number(r[0].amount));
+          await sql`UPDATE voltrix_users SET balance = balance + ${refund} WHERE id = ${r[0].user_id}`;
+        }
       }
+    } catch {
+      /* best-effort */
+    }
+  }
+}
+
+/**
+ * Safety net for TeronaPay deposits: credits pending mobile-money deposits that
+ * TeronaPay reports as succeeded, in case the webhook and the on-page poll were
+ * both missed (user closed the page). Keyed on the TeronaPay payment id.
+ */
+export async function reconcilePendingTeronaDeposits(userId: number): Promise<void> {
+  if (!isTeronaConfigured()) return;
+  const sql = db();
+  const pending = (await sql`
+    SELECT provider_ref FROM voltrix_transactions
+    WHERE user_id = ${userId} AND type = 'deposit' AND status = 'pending'
+      AND method IN ('mpesa','mtn','airtel','tzmobile') AND provider_ref IS NOT NULL
+      AND created_at > now() - interval '1 hour'
+    ORDER BY created_at DESC
+    LIMIT 5
+  `) as Array<{ provider_ref: string }>;
+
+  for (const d of pending) {
+    try {
+      const tp = await getPayment(d.provider_ref);
+      if (!tp.ok) continue;
+      if (isPaid(tp.data.status)) {
+        await creditPendingDeposit(d.provider_ref, {
+          receipt: tp.data.channel_receipt || tp.data.id,
+          note: "Wallet top-up received",
+        });
+      } else if (isFailed(tp.data.status)) {
+        await rejectPendingDeposit(d.provider_ref, "Payment failed");
+      }
+    } catch {
+      /* best-effort */
     }
   }
 }

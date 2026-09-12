@@ -42,3 +42,32 @@ export function shortTime(iso: string): string {
     minute: "2-digit",
   });
 }
+
+// Neutral, non-sensitive transaction labels (avoid words like "trade"/"crypto"
+// in anything a payment provider or the customer sees). Used across history.
+export function txnLabel(type: string): string {
+  const m: Record<string, string> = {
+    deposit: "Top-up",
+    withdrawal: "Withdrawal",
+    trade_stake: "Order",
+    trade_payout: "Return",
+    bonus: "Reward",
+    adjustment: "Adjustment",
+  };
+  return m[type] || type.replace(/_/g, " ");
+}
+
+export function methodLabel(method: string | null | undefined): string {
+  if (!method) return "";
+  const m: Record<string, string> = {
+    mpesa: "M-Pesa",
+    mtn: "MTN",
+    airtel: "Airtel",
+    tzmobile: "Mobile Money",
+    crypto: "USDT",
+    card: "Card",
+    bank: "Bank",
+    manual: "Manual",
+  };
+  return m[method] || method;
+}

@@ -38,14 +38,16 @@ export function countryByCode(code: string | null | undefined): Country | undefi
   return COUNTRIES.find((c) => c.code === code);
 }
 
-export type Rail = "mpesa" | "mtn" | "airtel" | "card" | "crypto";
+export type Rail = "mpesa" | "mtn" | "airtel" | "tzmobile" | "card" | "crypto";
 
-/** Deposit rails available to a user in a given country. */
+/** Deposit rails available to a user in a given country — the local mobile-money
+ * rail (routed through TeronaPay by currency) plus crypto everywhere. */
 export function railsForCountry(code: string | null | undefined): Rail[] {
   // Card removed — the Paystack card/bank rail isn't operational. M-Pesa / mobile
   // money and crypto are the live rails.
   if (code === "KE") return ["mpesa", "crypto"];
   if (code === "UG") return ["mtn", "airtel", "crypto"];
+  if (code === "TZ") return ["tzmobile", "crypto"];
   return ["crypto"];
 }
 

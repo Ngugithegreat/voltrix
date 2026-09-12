@@ -20,11 +20,13 @@ import {
 } from "@/lib/paystack";
 import QRCode from "qrcode";
 import { isCryptoConfigured, createPayment, isSupportedCoin, CRYPTO_MIN_USD } from "@/lib/crypto-pay";
-import { isSoftwaveConfigured, stkPush as swStkPush } from "@/lib/softwave";
+import { isTeronaConfigured, createPayment as teronaCreatePayment } from "@/lib/teronapay";
 import {
   isCollectoConfigured,
   normalizeUgPhone,
   centsToUgx,
+  normalizeTzPhone,
+  centsToTzs,
   requestToPay,
 } from "@/lib/collecto";
 
@@ -58,8 +60,8 @@ export async function POST(req: Request) {
   const base = callbackBase(req.url);
   const usd = amount / 100;
 
-  // ---------- M-Pesa via SoftWave Global (preferred PSP when configured) ----------
-  if (method === "mpesa" && isSoftwaveConfigured()) {
+  // ---------- M-Pesa via TeronaPay (KES · STK Push) ----------
+  if (method === "mpesa" && isTeronaConfigured()) {
     const phone = normalizePhone(reference);
     if (!phone) {
       return NextResponse.json(
@@ -67,38 +69,56 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    // Rate limit: at most one prompt every 5 minutes per account.
+    const recent = (await sql`
+      SELECT 1 FROM voltrix_transactions
+      WHERE user_id = ${session.id} AND type = 'deposit' AND method = 'mpesa'
+        AND status != 'rejected' AND created_at > now() - interval '5 minutes' LIMIT 1
+    `) as any[];
+    if (recent.length) {
+      return NextResponse.json(
+        { error: "Please wait a few minutes before requesting another prompt." },
+        { status: 429 }
+      );
+    }
     const amountKes = centsToKes(amount);
-    const merchantRef = `swd_${session.id}_${randomUUID().slice(0, 12)}`;
-    const sw = await swStkPush({ amountKes, phone, reference: merchantRef, description: `${BRAND_NAME} deposit` });
-    if (!sw.ok) {
-      return NextResponse.json({ error: sw.error || "Could not start the M-Pesa prompt. Try again." }, { status: 502 });
+    const ref = `dep_${session.id}_${randomUUID().slice(0, 12)}`;
+    const tp = await teronaCreatePayment({
+      reference: ref,
+      amount: amountKes,
+      currency: "KES",
+      channel: "mpesa_stk_push",
+      payerPhone: `+${phone}`,
+    });
+    if (!tp.ok) {
+      return NextResponse.json({ error: tp.error || "Could not start the prompt. Try again." }, { status: 502 });
     }
     const rows = (await sql`
       INSERT INTO voltrix_transactions
         (user_id, type, amount, status, method, reference, provider_ref, note)
       VALUES
         (${session.id}, 'deposit', ${amount}, 'pending', 'mpesa', ${phone},
-         ${sw.data.transaction_id}, ${"STK sent · SoftWave · KES " + amountKes})
+         ${tp.data.id}, ${`${BRAND_NAME} wallet top-up · KES ${amountKes}`})
       RETURNING *
     `) as any[];
     return NextResponse.json({
       ok: true,
       mpesa: true,
-      softwave: true,
+      terona: true,
       amountKes,
-      checkoutRequestId: sw.data.transaction_id,
+      checkoutRequestId: tp.data.id,
       transaction: rows[0],
-      message: "Check your phone and enter your M-Pesa PIN to complete the deposit.",
+      message: "Check your phone and enter your M-Pesa PIN to complete.",
     });
   }
 
-  // ---------- M-Pesa (Daraja STK Push) — fallback when SoftWave isn't set ----------
+  // ---------- M-Pesa (Daraja STK Push) — fallback when TeronaPay isn't set ----------
   if (method === "mpesa") {
     if (!isMpesaConfigured()) {
       return NextResponse.json(
         {
           error:
-            "M-Pesa isn’t available right now. (Admin: set the SOFTWAVE_API_KEY or MPESA_* variables in Vercel and redeploy.)",
+            "M-Pesa isn’t available right now. (Admin: set the TERONAPAY_* or MPESA_* variables in Vercel and redeploy.)",
         },
         { status: 503 }
       );
@@ -231,7 +251,97 @@ export async function POST(req: Request) {
     }
   }
 
-  // ---------- Uganda mobile money (MTN / Airtel via Collecto) ----------
+  // ---------- Uganda mobile money (MTN / Airtel) via TeronaPay ----------
+  if ((method === "mtn" || method === "airtel") && isTeronaConfigured()) {
+    const phone = normalizeUgPhone(reference);
+    if (!phone) {
+      return NextResponse.json({ error: "Enter a valid Ugandan phone (e.g. 0772123456)." }, { status: 400 });
+    }
+    const recent = (await sql`
+      SELECT 1 FROM voltrix_transactions
+      WHERE user_id = ${session.id} AND type = 'deposit' AND method IN ('mtn','airtel')
+        AND status != 'rejected' AND created_at > now() - interval '5 minutes' LIMIT 1
+    `) as any[];
+    if (recent.length) {
+      return NextResponse.json({ error: "Please wait a few minutes before requesting another prompt." }, { status: 429 });
+    }
+    const amountUgx = centsToUgx(amount);
+    const ref = `dep_${session.id}_${randomUUID().slice(0, 12)}`;
+    const tp = await teronaCreatePayment({
+      reference: ref,
+      amount: amountUgx,
+      currency: "UGX",
+      channel: "mobile_money",
+      payerPhone: `+${phone}`,
+    });
+    if (!tp.ok) {
+      return NextResponse.json({ error: tp.error || "Could not start the prompt. Try again." }, { status: 502 });
+    }
+    const rows = (await sql`
+      INSERT INTO voltrix_transactions
+        (user_id, type, amount, status, method, reference, provider_ref, note)
+      VALUES
+        (${session.id}, 'deposit', ${amount}, 'pending', ${method}, ${phone}, ${tp.data.id},
+         ${`${BRAND_NAME} wallet top-up · UGX ${amountUgx}`})
+      RETURNING *
+    `) as any[];
+    return NextResponse.json({
+      ok: true,
+      mpesa: true,
+      terona: true,
+      amountKes: amountUgx,
+      checkoutRequestId: tp.data.id,
+      transaction: rows[0],
+      message: `Check your phone and approve the ${method.toUpperCase()} prompt to complete.`,
+    });
+  }
+
+  // ---------- Tanzania mobile money via TeronaPay (TZS) ----------
+  if (method === "tzmobile" && isTeronaConfigured()) {
+    const phone = normalizeTzPhone(reference);
+    if (!phone) {
+      return NextResponse.json({ error: "Enter a valid Tanzanian phone (e.g. 0712345678)." }, { status: 400 });
+    }
+    const recent = (await sql`
+      SELECT 1 FROM voltrix_transactions
+      WHERE user_id = ${session.id} AND type = 'deposit' AND method = 'tzmobile'
+        AND status != 'rejected' AND created_at > now() - interval '5 minutes' LIMIT 1
+    `) as any[];
+    if (recent.length) {
+      return NextResponse.json({ error: "Please wait a few minutes before requesting another prompt." }, { status: 429 });
+    }
+    const amountTzs = centsToTzs(amount);
+    const ref = `dep_${session.id}_${randomUUID().slice(0, 12)}`;
+    const tp = await teronaCreatePayment({
+      reference: ref,
+      amount: amountTzs,
+      currency: "TZS",
+      channel: "mobile_money",
+      payerPhone: `+${phone}`,
+    });
+    if (!tp.ok) {
+      return NextResponse.json({ error: tp.error || "Could not start the prompt. Try again." }, { status: 502 });
+    }
+    const rows = (await sql`
+      INSERT INTO voltrix_transactions
+        (user_id, type, amount, status, method, reference, provider_ref, note)
+      VALUES
+        (${session.id}, 'deposit', ${amount}, 'pending', 'tzmobile', ${phone}, ${tp.data.id},
+         ${`${BRAND_NAME} wallet top-up · TZS ${amountTzs}`})
+      RETURNING *
+    `) as any[];
+    return NextResponse.json({
+      ok: true,
+      mpesa: true,
+      terona: true,
+      amountKes: amountTzs,
+      checkoutRequestId: tp.data.id,
+      transaction: rows[0],
+      message: "Check your phone and approve the mobile-money prompt to complete.",
+    });
+  }
+
+  // ---------- Uganda mobile money (MTN / Airtel via Collecto) — fallback ----------
   if (method === "mtn" || method === "airtel") {
     if (!isCollectoConfigured()) {
       return NextResponse.json(

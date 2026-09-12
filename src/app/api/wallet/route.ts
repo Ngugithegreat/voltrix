@@ -6,7 +6,7 @@ import { isTestEmail } from "@/lib/testmode";
 import { getGlobalTest } from "@/lib/settings";
 import { referralStats } from "@/lib/referral";
 import { settleExpiredTrades, settleStopOuts } from "@/lib/trades";
-import { reconcilePendingMpesaDeposits, reconcilePendingCryptoDeposits, reconcilePendingSoftwavePayouts } from "@/lib/deposits";
+import { reconcilePendingMpesaDeposits, reconcilePendingCryptoDeposits, reconcilePendingTeronaPayouts, reconcilePendingTeronaDeposits } from "@/lib/deposits";
 import { isMpesaConfigured, isB2cConfigured, usdKesRate, usdKesWithdrawRate } from "@/lib/mpesa";
 import { isPaystackConfigured } from "@/lib/paystack";
 import { isCryptoConfigured } from "@/lib/crypto-pay";
@@ -31,7 +31,8 @@ export async function GET() {
       settleStopOuts(session.id),
       reconcilePendingMpesaDeposits(session.id),
       reconcilePendingCryptoDeposits(session.id),
-      reconcilePendingSoftwavePayouts(session.id),
+      reconcilePendingTeronaDeposits(session.id),
+      reconcilePendingTeronaPayouts(session.id),
     ]);
   } catch {
     /* non-fatal */
