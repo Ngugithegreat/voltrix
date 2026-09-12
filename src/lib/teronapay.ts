@@ -110,8 +110,25 @@ export function createPayment(opts: {
   });
 }
 
-export function getPayment(id: string): Promise<TResult<TPayment>> {
-  return call<TPayment>(`/v1/payments/${encodeURIComponent(id)}`, { method: "GET" });
+// GET lookups must target the SAME wallet the payment/payout was created under —
+// the API key spans several currency accounts, and a lookup on the wrong (or
+// default) account 404s. When the caller knows the currency we send its
+// X-Account-No; otherwise we try each known account until one resolves. Without
+// this, a payout's status could never be read, so a failed withdrawal stayed
+// stuck "pending" and was never refunded.
+async function getResource<T>(path: string, currency?: string): Promise<TResult<T>> {
+  if (currency) return call<T>(path, { method: "GET", accountNo: accountFor(currency) });
+  const first = await call<T>(path, { method: "GET" });
+  if (first.ok) return first;
+  for (const acct of Object.values(ACCOUNTS)) {
+    const r = await call<T>(path, { method: "GET", accountNo: acct });
+    if (r.ok) return r;
+  }
+  return first;
+}
+
+export function getPayment(id: string, currency?: string): Promise<TResult<TPayment>> {
+  return getResource<TPayment>(`/v1/payments/${encodeURIComponent(id)}`, currency);
 }
 
 export type TPayout = {
@@ -149,8 +166,8 @@ export function createPayout(opts: {
   });
 }
 
-export function getPayout(id: string): Promise<TResult<TPayout>> {
-  return call<TPayout>(`/v1/payouts/${encodeURIComponent(id)}`, { method: "GET" });
+export function getPayout(id: string, currency?: string): Promise<TResult<TPayout>> {
+  return getResource<TPayout>(`/v1/payouts/${encodeURIComponent(id)}`, currency);
 }
 
 export function isPaid(status: string): boolean {
