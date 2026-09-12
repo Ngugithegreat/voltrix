@@ -421,7 +421,7 @@ export function TradeTerminal() {
   }
 
   return (
-    <div className="mx-auto flex max-w-[1640px] flex-col px-1.5 py-1.5 sm:px-2 sm:py-2 lg:h-[calc(100vh-3rem)] lg:overflow-hidden">
+    <div className="flex min-h-[calc(100dvh-3rem)] w-full flex-col lg:h-[calc(100vh-3rem)] lg:min-h-0 lg:overflow-hidden">
       <EntryScanner
         open={scannerOpen}
         onClose={() => setScannerOpen(false)}
@@ -443,7 +443,7 @@ export function TradeTerminal() {
       {/* Unified workspace — a single high-end surface split into seamless
           panes (positions · chart · ticket) instead of separate floating
           columns, so the whole dashboard reads as one page. */}
-      <div className="card flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row lg:divide-x lg:divide-border-strong">
+      <div className="card flex min-h-0 flex-1 flex-col overflow-hidden rounded-none border-x-0 border-t-0 lg:flex-row lg:divide-x lg:divide-border-strong">
         {/* Positions — drops to the bottom on phones */}
         <section className="order-last flex min-h-0 flex-col overflow-hidden border-t border-border-strong max-h-[46vh] lg:order-none lg:w-[288px] lg:shrink-0 lg:border-t-0 lg:max-h-none">
           <div className="flex items-stretch border-b border-border-strong">
