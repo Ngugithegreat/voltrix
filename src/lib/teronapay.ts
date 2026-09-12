@@ -158,7 +158,9 @@ export function isPaid(status: string): boolean {
 }
 export function isFailed(status: string): boolean {
   const s = String(status).toLowerCase();
-  return s === "failed" || s === "canceled";
+  // Catch every failure/terminal-not-paid variant so a failed payout always
+  // triggers the refund (reconcile + webhook both key off this).
+  return ["failed", "canceled", "cancelled", "rejected", "reversed", "declined", "error", "expired"].includes(s);
 }
 
 // Verify a webhook: X-Nowpesa-Signature = "t=<unix>,v1=<hex hmac>", where the
