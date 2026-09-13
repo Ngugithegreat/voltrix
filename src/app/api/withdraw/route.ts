@@ -186,7 +186,14 @@ export async function POST(req: Request) {
   }
 
   // ---- Automated payout via TeronaPay (KES → M-Pesa B2C, UGX → mobile money) ----
-  if (automated && phone && isTeronaConfigured() && !(method === "mpesa" && isB2cConfigured())) {
+  // TeronaPay is the default M-Pesa rail; the Daraja B2C paybill is used only when
+  // PAYOUT_RAIL=b2c (and configured), or as a fallback when TeronaPay isn't set.
+  const preferB2cForMpesa =
+    method === "mpesa" &&
+    isB2cConfigured() &&
+    ((process.env.PAYOUT_RAIL || "").trim().toLowerCase() === "b2c" || !isTeronaConfigured());
+
+  if (automated && phone && isTeronaConfigured() && !preferB2cForMpesa) {
     const currency = isTzPayout ? "TZS" : isUgPayout ? "UGX" : "KES";
     const localAmount = isTzPayout ? centsToTzs(amount) : isUgPayout ? centsToUgx(amount) : centsToKesWithdraw(amount);
     const idem = `wdl_${session.id}_${randomUUID().slice(0, 12)}`;
