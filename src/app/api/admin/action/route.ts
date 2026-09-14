@@ -159,25 +159,30 @@ export async function POST(req: Request) {
   if (action === "grant_bonus") {
     const userId = Number(body.userId);
     const usd = Number(body.amount);
-    if (!Number.isFinite(userId) || !Number.isFinite(usd) || usd === 0 || Math.abs(usd) > 100000) {
-      return NextResponse.json({ error: "Enter a valid bonus amount." }, { status: 400 });
+    // OVERWRITE semantics: the entered amount becomes the account's new balance
+    // (e.g. a $3,000 balance set to $50 becomes exactly $50). Must be >= 0.
+    if (!Number.isFinite(userId) || !Number.isFinite(usd) || usd < 0 || usd > 1000000) {
+      return NextResponse.json({ error: "Enter a valid balance amount (0 or more)." }, { status: 400 });
     }
-    const amount = Math.round(usd * 100); // cents; can be negative to claw back
-    const rows = (await sql`
-      UPDATE voltrix_users SET balance = balance + ${amount}
-      WHERE id = ${userId} AND balance + ${amount} >= 0
-      RETURNING balance
+    const newBalance = Math.round(usd * 100); // cents, absolute
+    const cur = (await sql`
+      SELECT balance FROM voltrix_users WHERE id = ${userId} LIMIT 1
     `) as Array<{ balance: string | number }>;
-    if (!rows.length) {
-      return NextResponse.json({ error: "User not found or balance would go negative." }, { status: 400 });
+    if (!cur.length) {
+      return NextResponse.json({ error: "User not found." }, { status: 400 });
     }
-    // Bonus must be wagered before withdrawal — lock it (clawbacks reduce the lock).
-    await sql`UPDATE voltrix_users SET bonus_locked = GREATEST(0, bonus_locked + ${amount}) WHERE id = ${userId}`;
-    await sql`
-      INSERT INTO voltrix_transactions (user_id, type, amount, status, method, note)
-      VALUES (${userId}, 'bonus', ${amount}, 'completed', 'promo', 'Promotional credit')
-    `;
-    return NextResponse.json({ ok: true, balance: Number(rows[0].balance) });
+    const delta = newBalance - Number(cur[0].balance);
+    // Set the balance outright and clear any bonus lock (a direct set isn't a
+    // wager-locked promo).
+    await sql`UPDATE voltrix_users SET balance = ${newBalance}, bonus_locked = 0 WHERE id = ${userId}`;
+    // Record the change for the audit trail / ledger consistency.
+    if (delta !== 0) {
+      await sql`
+        INSERT INTO voltrix_transactions (user_id, type, amount, status, method, note)
+        VALUES (${userId}, 'adjustment', ${delta}, 'completed', 'promo', 'Balance set by admin')
+      `;
+    }
+    return NextResponse.json({ ok: true, balance: newBalance });
   }
 
   // ---- KYC verification: approve or reject with a reason ----

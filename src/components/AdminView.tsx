@@ -432,13 +432,16 @@ function PlayerRow({
   }
 
   function grantBonus() {
-    const raw = window.prompt(`Grant promo credit to ${u.name} (${u.account_no}). Amount in USD (negative to remove):`, "10");
+    const raw = window.prompt(
+      `Set ${u.name}'s (${u.account_no}) balance to (USD). This OVERWRITES the current balance of ${money(u.balance)}:`,
+      "50"
+    );
     if (raw == null) return;
     const amount = Number(raw);
-    if (!Number.isFinite(amount) || amount === 0) return;
+    if (!Number.isFinite(amount) || amount < 0) return;
     run({ action: "grant_bonus", userId: u.id, amount }, (j) =>
       window.alert(
-        `Bonus applied to ${u.name}. New balance: ${money(Number(j.balance ?? 0))}.`
+        `Balance set for ${u.name}. New balance: ${money(Number(j.balance ?? 0))}.`
       )
     );
   }
